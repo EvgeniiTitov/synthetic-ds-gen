@@ -8,6 +8,7 @@ class NoiseBlur:
     Applies noises to the entire image
     """
     def __init__(self, types: List[str], thresh: float):
+        self.name = "noiseblur"
         self.thresh = thresh
         self.n = list()
         for type_ in types:

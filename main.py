@@ -1,11 +1,15 @@
 import os
+import sys
 
 import argparse
 import cv2
 from typing import List
 import numpy as np
+import random
 
-from augmentations import Rotation, Resize, NoiseBlur, TransparencyOverlay
+from augmentations import Rotation, Resize, NoiseBlur
+from augmentations import Augmenter
+from config import config
 
 
 ALLOWED_EXTs = [".jpg", ".jpeg", ".png"]
@@ -19,16 +23,21 @@ def parse_arguments() -> dict:
                         help="Dir with background images")
     parser.add_argument("-s", "--save_path", default=r"",
                         help="Dir where augmented images will be saved")
-    parser.add_argument("--log", type=int,
-                        help="1: create log file that lists what augmentation"
-                             " was applied to each generated image")
     arguments = parser.parse_args()
 
     return vars(arguments)
 
 
-def validate_args(args: dict) -> bool:
-    return True
+def validate_parameters(params) -> None:
+    assert 0 < int(params["nb_images"]) < 10_000
+    assert 0 <= int(params["rotation_limit"]) <= 180
+    assert 0.0 <= float(params["rotation_thresh"]) <= 1.0
+    assert 0.0 <= float(params["resize_thresh"]) <= 1.0
+    assert all([0.0 < float(e) < 1.0 for e in params["resize_limit"].split()])
+    assert 0.0 <= float(params["noise_blur_thresh"]) <= 1.0
+    assert all([0.0 < float(e) <= 1.0 for e in params["transp_range"].split()])
+    assert 0.0 <= float(params["transp_thresh"]) <= 1.0
+    print("Parameters validated")
 
 
 def create_dest_dirs(save_path: str, cls_names: List[str]) -> bool:
@@ -45,9 +54,10 @@ def create_dest_dirs(save_path: str, cls_names: List[str]) -> bool:
             try:
                 os.mkdir(dirname)
             except Exception as e:
-                print(f"Failed to create save dir for cls {cls_name}. Error: {e}")
+                print(f"Failed to create save dir for {cls_name}. Error: {e}")
                 return False
 
+    print("Destinations directories created")
     return True
 
 
@@ -136,42 +146,131 @@ def validate_provided_logos(logos_dir: str, cls_names: List[str]) -> None:
                 print("Image validated successfully")
 
         assert len(os.listdir(path_to_dir)) > 0
+
+    print("Logos validated")
+    return
+
+
+def get_background_image(background_dir: str) -> str:
+    assert len(os.listdir(background_dir)) > 0, "No background images provided"
+    image_names = os.listdir(background_dir)
+    while True:
+        image_name = random.choice(image_names)
+        yield os.path.join(background_dir, image_name)
+
+
+def dump_coord_txt(cls: int, payload: list, name: int, save_path: str) -> bool:
+    filename = os.path.join(save_path, str(name) + ".txt")
+    try:
+        with open(filename, "w") as f:
+            line = f"{cls} {' '.join(list(map(str, payload)))}"
+            f.write(line)
+    except Exception as e:
+        print(f"Failed to create txt: {save_path}. Error: {e}")
+        return False
+
+    return True
+
+
+def save_logs(payload: dict, save_path: str) -> None:
+    filename = os.path.join(save_path, "aug_logs.txt")
+    with open(filename, "w") as f:
+        for img_name, aug in payload.items():
+            line = f"{img_name} {' '.join(aug)}\n"
+            f.write(line)
+
     return
 
 
 def perform_augmentation(
         logos_dir: str,
+        background_dir: str,
         save_path: str,
         cls_names: List[str],
-        args: dict
+        imgs_to_generate: int,
+        augmenter: Augmenter
 ) -> None:
     """ Augmentation loop for each class """
-    rotator = Rotation(
-        rotation_limit=,
-        rotation_thresh=
-    )
-    resizer = Resize(
-        resize_range=,
-        resize_thresh=
-    )
-    noise_blurer = NoiseBlur(
-        types=["jpegcomp", "multiply", "contrast", "gaussian"],
-        thresh=
-    )
-    transparency_overlayer = TransparencyOverlay(
-        transp_range=,
-        transp_thresh=
-    )
+    background_gen = get_background_image(background_dir)
+    image_count, exceptions = 0, 0
+    logs = dict()
+    for i, cls_name in enumerate(cls_names):
+        if cls_name != "rebel":
+            continue
 
+        logo_dir = os.path.join(logos_dir, cls_name)
+        logo_paths = [
+            os.path.join(logo_dir, e) for e in os.listdir(logo_dir)
+        ]
+        total = 0
+        while True:
+            if total == imgs_to_generate:
+                break
+
+            # Pick a random logo of class cls_name and a background image
+            logo_path = random.choice(logo_paths)
+            background_path = next(background_gen)
+            logo_image = cv2.imread(logo_path, cv2.IMREAD_UNCHANGED)
+            backgr_image = cv2.imread(background_path)
+            if backgr_image is None:
+                print(f"Failed to open background image: {background_path}")
+                continue
+            assert logo_image is not None
+            # Generate an image, get coordinates of the place where the logo
+            # was applied alongside the applied augmentation
+            image, coord, augment = augmenter.generate_image(
+                logo_image,
+                backgr_image
+            )
+            if image is None:
+                print("Generated image is None. Check the pipeline")
+                exceptions += 1
+                continue
+
+            # cv2.rectangle(image, pt1=(coord[0], coord[1]),
+            #               pt2=(coord[2], coord[3]),
+            #               color=(0, 255, 0), thickness=3)
+            # cv2.imshow("", image)
+            # cv2.waitKey(0)
+            # print(f"Class: {cls_name}. Img name: {image_count}.jpg. "
+            #       f"Coords: {coord}. Augments: {augment}")
+
+            store_path = os.path.join(
+                save_path, cls_name, f"{image_count}.jpg"
+            )
+            try:
+                cv2.imwrite(store_path, image)
+            except Exception as e:
+                print(f"Failed to save generated image. Error: {e}")
+                exceptions += 1
+                continue
+
+            # Save coordinates next to the image
+            dumped = dump_coord_txt(
+                cls=i, payload=coord, name=image_count,
+                save_path=os.path.join(save_path, cls_name)
+            )
+            if not dumped:
+                print("Failed to dump coordinates into txt")
+                inp = input("Continue? [Y/N]: ")
+                if inp.strip().upper() == "N":
+                    sys.exit()
+
+            logs[f"{image_count}.jpg"] = augment
+            total += 1
+            image_count += 1
+            print(f"Generated image: {total}, class: {cls_name}")
+
+    save_logs(logs, save_path)
+    return
 
 
 def main():
     args = parse_arguments()
 
     # Validate args to ensure correct parameters have been provided
-    validated = validate_args(args)
-    if not validated:
-        return
+    params = config["augmentation"]
+    validate_parameters(params)
 
     # Create folders where generation results will be saved
     cls_names = get_class_names(args["logos"])
@@ -181,7 +280,35 @@ def main():
 
     # Validate provided logos are actually RGBA, else attempt convertion
     validate_provided_logos(args["logos"], cls_names)
-    perform_augmentation(args["logos"], args["save_path"], cls_names, args)
+
+    # Initialize augmentators
+    rotator = Rotation(
+        rotation_limit=int(params["rotation_limit"]),
+        rotation_thresh=float(params["rotation_thresh"])
+    )
+    resizer = Resize(
+        resize_range=[float(e) for e in params["resize_limit"].split()],
+        resize_thresh=float(params["resize_thresh"])
+    )
+    noise_blurer = NoiseBlur(
+        types=["jpegcomp", "multiply", "contrast", "gaussian"],
+        thresh=float(params["noise_blur_thresh"])
+    )
+    augmenter = Augmenter(
+        logo_aug=[rotator, resizer],
+        image_aug=[noise_blurer],
+        transp_thresh=float(params["transp_thresh"]),
+        transp_range=[float(e) for e in params["transp_range"].split()]
+    )
+    # Run image generation pipeline
+    perform_augmentation(
+        logos_dir=args["logos"],
+        background_dir=args["background"],
+        save_path=args["save_path"],
+        cls_names=cls_names,
+        imgs_to_generate=int(params["nb_images"]),
+        augmenter=augmenter
+    )
 
 
 if __name__ == "__main__":
