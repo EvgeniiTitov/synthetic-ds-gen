@@ -8,12 +8,11 @@ class Resize:
     """
     Resizes logo within the allowed range keeping the aspect ratio
     """
-    def __init__(self, resize_range: List[float], resize_thresh: float):
+    def __init__(self, resize_range: List[float]):
         self.name = "resize"
         assert len(resize_range) == 2 and resize_range[0] < resize_range[1]
         assert all(0.0 < e < 1.0 for e in resize_range), "Wrong resize range values"
         self.min_allowed, self.max_allowed = resize_range
-        self.thresh = resize_thresh
 
     def __call__(
             self,

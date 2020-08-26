@@ -3,7 +3,7 @@ import sys
 
 import argparse
 import cv2
-from typing import List
+from typing import List, Tuple
 import numpy as np
 import random
 
@@ -32,7 +32,6 @@ def validate_parameters(params) -> None:
     assert 0 < int(params["nb_images"]) < 10_000
     assert 0 <= int(params["rotation_limit"]) <= 180
     assert 0.0 <= float(params["rotation_thresh"]) <= 1.0
-    assert 0.0 <= float(params["resize_thresh"]) <= 1.0
     assert all([0.0 < float(e) < 1.0 for e in params["resize_limit"].split()])
     assert 0.0 <= float(params["noise_blur_thresh"]) <= 1.0
     assert all([0.0 < float(e) <= 1.0 for e in params["transp_range"].split()])
@@ -176,7 +175,7 @@ def save_logs(payload: dict, save_path: str) -> None:
     filename = os.path.join(save_path, "aug_logs.txt")
     with open(filename, "w") as f:
         for img_name, aug in payload.items():
-            line = f"{img_name} {' '.join(aug)}\n"
+            line = f"{img_name}: {' '.join(aug)}\n"
             f.write(line)
 
     return
@@ -189,15 +188,12 @@ def perform_augmentation(
         cls_names: List[str],
         imgs_to_generate: int,
         augmenter: Augmenter
-) -> None:
+) -> Tuple:
     """ Augmentation loop for each class """
     background_gen = get_background_image(background_dir)
     image_count, exceptions = 0, 0
     logs = dict()
     for i, cls_name in enumerate(cls_names):
-        if cls_name != "rebel":
-            continue
-
         logo_dir = os.path.join(logos_dir, cls_name)
         logo_paths = [
             os.path.join(logo_dir, e) for e in os.listdir(logo_dir)
@@ -262,7 +258,7 @@ def perform_augmentation(
             print(f"Generated image: {total}, class: {cls_name}")
 
     save_logs(logs, save_path)
-    return
+    return image_count, exceptions
 
 
 def main():
@@ -287,8 +283,7 @@ def main():
         rotation_thresh=float(params["rotation_thresh"])
     )
     resizer = Resize(
-        resize_range=[float(e) for e in params["resize_limit"].split()],
-        resize_thresh=float(params["resize_thresh"])
+        resize_range=[float(e) for e in params["resize_limit"].split()]
     )
     noise_blurer = NoiseBlur(
         types=["jpegcomp", "multiply", "contrast", "gaussian"],
@@ -301,7 +296,7 @@ def main():
         transp_range=[float(e) for e in params["transp_range"].split()]
     )
     # Run image generation pipeline
-    perform_augmentation(
+    imgs_generated, exceptions = perform_augmentation(
         logos_dir=args["logos"],
         background_dir=args["background"],
         save_path=args["save_path"],
@@ -309,6 +304,7 @@ def main():
         imgs_to_generate=int(params["nb_images"]),
         augmenter=augmenter
     )
+    print(f"Generated {imgs_generated} images. Exceptions: {exceptions}")
 
 
 if __name__ == "__main__":

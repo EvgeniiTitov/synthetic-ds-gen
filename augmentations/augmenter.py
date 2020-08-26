@@ -28,11 +28,15 @@ class Augmenter:
         log = list()
         background_size = background.shape[:2]
 
-        # Apply transformations to the logo
+        # Apply transformations to the logo (resizing is compulsory step)
         for logo_t in self.logo_transforms:
-            if random.random() > logo_t.thresh:
+            if logo_t.name == "resize":
                 logo = logo_t(logo, background_size)
                 log.append(logo_t.name)
+            else:
+                if random.random() > logo_t.thresh:
+                    logo = logo_t(logo, background_size)
+                    log.append(logo_t.name)
 
         # Combine the logo and background
         combined, coord, transp_value = self._overlay_logo(logo, background)
@@ -78,4 +82,30 @@ class Augmenter:
         background[y1:y2, x1:x2] = (1.0 - mask) * \
                                     background[y1:y2, x1:x2] + mask * overlay
 
-        return background, [x1, y1, x2, y2], trans_factor
+        coords = self.convert_coords_darknet_style(
+            coords=[x1, y1, x2, y2],
+            image=background
+        )
+        return background, coords, trans_factor
+
+    def convert_coords_darknet_style(
+            self,
+            coords: List[int],
+            image: np.ndarray
+    ) -> List[float]:
+        """
+        Converts coordinates from [left, top, right, bot] to the Darknet style:
+        [x_centre, y_centre, width, height]
+        """
+        img_h, img_w = image.shape[:2]
+        left, top, right, bot = coords
+
+        box_centre_x = round(((left + right) // 2) / img_w, 6)
+        box_centre_y = round(((top + bot) // 2) / img_h, 6)
+        width = round((right - left) / img_w, 6)
+        height = round((bot - top) / img_h, 6)
+
+        assert all((0.0 <= e <= 1.0 for e in [box_centre_x, box_centre_y,
+                                              width, height]))
+
+        return [box_centre_x, box_centre_y, width, height]
