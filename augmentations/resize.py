@@ -2,6 +2,7 @@ import cv2
 from typing import List
 import numpy as np
 import random
+import math
 
 
 class Resize:
@@ -11,8 +12,9 @@ class Resize:
     def __init__(self, resize_range: List[float]):
         self.name = "resize"
         assert len(resize_range) == 2 and resize_range[0] < resize_range[1]
-        assert all(0.0 < e < 1.0 for e in resize_range), "Wrong resize range values"
+        assert all(0.0 < e < 1.0 for e in resize_range), "Wrong resize range"
         self.min_allowed, self.max_allowed = resize_range
+        assert self.min_allowed < self.max_allowed
 
     def __call__(
             self,
@@ -21,19 +23,24 @@ class Resize:
     ) -> np.ndarray:
         background_height, background_width = background_size
         image_height, image_width = image.shape[:2]
-        resize_factor = random.randint(
+        backgr_area = background_height * background_width
+
+        # New desired ratio of logo area / background area
+        dest_ratio = random.randint(
             int(self.min_allowed * 100), int(self.max_allowed * 100)
         ) / 100
-        # Take the longer side and rescale it according to the randomly picked
-        # resize_factor, which is relative to the background image side
-        if image.shape[0] > image.shape[1]:
-            new_image_height = background_height * resize_factor
-            aspect_ratio_factor = new_image_height / image_height
-            new_image_width = image_width * aspect_ratio_factor
-        else:
-            new_image_width = background_width * resize_factor
-            aspect_ratio_factor = new_image_width / image_width
-            new_image_height = image_height * aspect_ratio_factor
+        assert 0 < dest_ratio <= 1
+        dest_area = int(backgr_area * dest_ratio)
+
+        new_image_width = int(
+            math.sqrt((dest_area * image_width) / (image_height))
+        )
+        new_image_height = int(
+            (new_image_width * image_height) / image_width
+        )
+        assert new_image_width > 0 and new_image_height > 0
+        assert new_image_height < background_height and \
+                                            new_image_width < background_width
         try:
             resized_image = cv2.resize(
                 image,

@@ -6,13 +6,15 @@ from typing import Tuple, List
 class Augmenter:
     def __init__(
             self,
-            logo_aug: list,
+            logo_aug_before: list,
             image_aug: list,
+            logo_aug_after: list,
             transp_thresh: float,
             transp_range: List[float]
     ):
-        self.logo_transforms = logo_aug
+        self.logo_transforms_before = logo_aug_before
         self.image_aug = image_aug
+        self.logo_transforms_after = logo_aug_after
         self.trans_thresh = transp_thresh
         self.trans_min, self.trans_max = transp_range
 
@@ -29,7 +31,8 @@ class Augmenter:
         background_size = background.shape[:2]
 
         # Apply transformations to the logo (resizing is compulsory step)
-        for logo_t in self.logo_transforms:
+        # before it gets overlayed on top of background
+        for logo_t in self.logo_transforms_before:
             if logo_t.name == "resize":
                 logo = logo_t(logo, background_size)
                 log.append(logo_t.name)
@@ -39,7 +42,9 @@ class Augmenter:
                     log.append(logo_t.name)
 
         # Combine the logo and background
-        combined, coord, transp_value = self._overlay_logo(logo, background)
+        combined, coord_darknet, coord, transp_value = self._overlay_logo(
+            logo, background
+        )
         log.append(f"transp_value: {transp_value}")
 
         # Apply transformation to the entire image (blurring, noise etc)
@@ -48,13 +53,22 @@ class Augmenter:
                 combined = image_t(combined)
                 log.append(image_t.name)
 
-        return combined, coord, log
+        # Apply transformation to the image section on which the logo was
+        # placed such as JPEG compression.
+        x1, y1, x2, y2 = coord
+        logo_arr = combined[y1:y2, x1:x2, :]
+        for logo_post_t in self.logo_transforms_after:
+            logo_arr = logo_post_t(logo_arr)
+
+        combined[y1:y2, x1:x2, :] = logo_arr
+
+        return combined, coord_darknet, log
 
     def _overlay_logo(
             self,
             logo: np.ndarray,
             background: np.ndarray
-    ) -> Tuple[np.ndarray, list, float]:
+    ) -> Tuple[np.ndarray, list, list, float]:
         """ Overlays company's logo on top of the provided background """
         logo_h, logo_w = logo.shape[:2]
         backgr_h, backgr_w = background.shape[:2]
@@ -86,7 +100,7 @@ class Augmenter:
             coords=[x1, y1, x2, y2],
             image=background
         )
-        return background, coords, trans_factor
+        return background, coords, [x1, y1, x2, y2], trans_factor
 
     def convert_coords_darknet_style(
             self,

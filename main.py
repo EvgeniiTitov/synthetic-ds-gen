@@ -7,7 +7,7 @@ from typing import List, Tuple
 import numpy as np
 import random
 
-from augmentations import Rotation, Resize, NoiseBlur
+from augmentations import Rotation, Resize, NoiseBlur, JPEGCompressor
 from augmentations import Augmenter
 from config import config
 
@@ -132,7 +132,7 @@ def validate_provided_logos(logos_dir: str, cls_names: List[str]) -> None:
             image_path = os.path.join(path_to_dir, filename)
             if not os.path.splitext(filename)[-1].lower() in ALLOWED_EXTs:
                 print(f"ATTENTION: Not allowed extension!")
-                #os.remove(image_path)
+                # os.remove(image_path)
                 continue
 
             # Validate the image is suitable for augmentation
@@ -278,6 +278,7 @@ def main():
     validate_provided_logos(args["logos"], cls_names)
 
     # Initialize augmentators
+    jpeg_compressor = JPEGCompressor(thresh=0.005)
     rotator = Rotation(
         rotation_limit=int(params["rotation_limit"]),
         rotation_thresh=float(params["rotation_thresh"])
@@ -290,8 +291,9 @@ def main():
         thresh=float(params["noise_blur_thresh"])
     )
     augmenter = Augmenter(
-        logo_aug=[rotator, resizer],
+        logo_aug_before=[rotator, resizer],
         image_aug=[noise_blurer],
+        logo_aug_after=[jpeg_compressor],
         transp_thresh=float(params["transp_thresh"]),
         transp_range=[float(e) for e in params["transp_range"].split()]
     )
