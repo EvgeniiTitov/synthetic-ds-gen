@@ -28,18 +28,20 @@ class Augmenter:
         background and applies possible transformations to the entire image
         """
         log = list()
-        background_size = background.shape[:2]
+        backgr_size = background.shape[:2]
 
-        # Apply transformations to the logo (resizing is compulsory step)
-        # before it gets overlayed on top of background
+        # Apply transformations to the logo (resizing is compulsory step, its
+        # thresh = 0.0) before it gets overlayed on top of background
+        flag = True
+        exclusive = ["perspective", "cutout"]
         for logo_t in self.logo_transforms_before:
-            if logo_t.name == "resize":
-                logo = logo_t(logo, background_size)
+            if random.random() > logo_t.thresh and logo_t.name not in exclusive:
+                logo = logo_t(logo, background_size=backgr_size)
                 log.append(logo_t.name)
-            else:
-                if random.random() > logo_t.thresh:
-                    logo = logo_t(logo, background_size)
-                    log.append(logo_t.name)
+            elif random.random() > logo_t.thresh and logo_t.name in exclusive and flag:
+                logo = logo_t(logo, background_size=backgr_size)
+                log.append(logo_t.name)
+                flag = False
 
         # Combine the logo and background
         combined, coord_darknet, coord, transp_value = self._overlay_logo(
@@ -59,7 +61,7 @@ class Augmenter:
         logo_arr = combined[y1:y2, x1:x2, :]
         for logo_post_t in self.logo_transforms_after:
             logo_arr = logo_post_t(logo_arr)
-
+            log.append(logo_post_t.name)
         combined[y1:y2, x1:x2, :] = logo_arr
 
         return combined, coord_darknet, log
@@ -72,8 +74,9 @@ class Augmenter:
         """ Overlays company's logo on top of the provided background """
         logo_h, logo_w = logo.shape[:2]
         backgr_h, backgr_w = background.shape[:2]
-        allowed_range_x = backgr_w - int(logo_w * 1.05)
-        allowed_range_y = backgr_h - int(logo_h * 1.05)
+        allowed_range_x = backgr_w - logo_w
+        allowed_range_y = backgr_h - logo_h
+        assert allowed_range_x > 0 and allowed_range_y > 0
 
         # Pick logo location coordinates
         x1 = random.randint(1, allowed_range_x)

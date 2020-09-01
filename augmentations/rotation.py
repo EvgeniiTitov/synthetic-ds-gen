@@ -20,11 +20,7 @@ class Rotation:
         self.thresh = rotation_thresh
         self.rotation_type = rotation_type
 
-    def __call__(
-            self,
-            image: np.ndarray,
-            background_size: List[int]
-    ) -> np.ndarray:
+    def __call__(self, image: np.ndarray, **kwargs) -> np.ndarray:
         rotation_angle = random.randint(-self.range, self.range)
         if rotation_angle == 0:
             return image

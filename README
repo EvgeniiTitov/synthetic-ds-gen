@@ -1,2 +1,15 @@
 1. Consider generating multiple logos on one image
 2. Custom size ranges for different classes of logos (for wide short ones)
+
+
+Training log:
+
+try 1:
+nb_images = 3000
+rotation_limit = 90
+rotation_thresh = 0.15
+resize_limit = 0.03 0.07
+noise_blur_thresh = 0.2
+transp_range = 0.72 1.0
+transp_thresh = 0.57
+
