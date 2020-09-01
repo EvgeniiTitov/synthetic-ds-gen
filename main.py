@@ -128,13 +128,13 @@ def generate_images(
         total += 1
         img_count += 1
 
-        if total % 5 == 0:
+        if total % 100 == 0:
             print(f"Process: {os.getpid()} generated {total} images")
 
-        if exceptions == 10:
-            print(f"Process {os.getpid()} terminated with"
-                  f" {exceptions} expections!")
-            break
+        # if exceptions == 10:
+        #     print(f"Process {os.getpid()} terminated with"
+        #           f" {exceptions} expections!")
+        #     break
     if logs:
         save_logs(logs, os.path.split(save_path)[0], class_name)
     print(f"Process: {os.getpid()} finishing with {exceptions} exceptions")

@@ -9,15 +9,8 @@
       <change afterPath="$PROJECT_DIR$/../aim_assistant_v2/nn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README" beforeDir="false" afterPath="$PROJECT_DIR$/README" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/augmenter.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/augmenter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/noise_blur.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/noise_blur.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/resize.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/resize.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/rotation.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/rotation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/script.conf" beforeDir="false" afterPath="$PROJECT_DIR$/script.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/utils.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -29,11 +22,11 @@
     <splitter split-orientation="horizontal" split-proportion="0.4616307">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="403">
-                  <caret line="186" column="30" lean-forward="true" selection-start-line="186" selection-start-column="30" selection-end-line="186" selection-end-column="30" />
+                <state relative-caret-position="643">
+                  <caret line="130" column="22" selection-start-line="130" selection-start-column="22" selection-end-line="130" selection-end-column="22" />
                   <folding>
                     <element signature="e#0#9#0" expanded="true" />
                   </folding>
@@ -41,10 +34,10 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/augmentations/noise_blur.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="375">
+                <state relative-caret-position="328">
                   <caret line="28" column="30" selection-start-line="28" selection-start-column="30" selection-end-line="28" selection-end-column="30" />
                   <folding>
                     <element signature="e#0#13#0" expanded="true" />
@@ -129,8 +122,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/script.conf">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="15">
-                  <caret line="1" column="14" selection-start-line="1" selection-start-column="14" selection-end-line="1" selection-end-column="14" />
+                <state relative-caret-position="45">
+                  <caret line="3" column="19" selection-start-line="3" selection-start-column="19" selection-end-line="3" selection-end-column="19" />
                 </state>
               </provider>
             </entry>
@@ -183,11 +176,11 @@
         <option value="$PROJECT_DIR$/augmentations/augmenter.py" />
         <option value="$PROJECT_DIR$/augmentations/cutout.py" />
         <option value="$PROJECT_DIR$/augmentations/__init__.py" />
-        <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/augmentations/color.py" />
         <option value="$PROJECT_DIR$/README" />
-        <option value="$PROJECT_DIR$/script.conf" />
         <option value="$PROJECT_DIR$/augmentations/noise_blur.py" />
+        <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/script.conf" />
       </list>
     </option>
   </component>
@@ -309,7 +302,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1928" y="-8" width="1936" height="1056" extended-state="7" />
+    <frame x="-1928" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1108742" />
@@ -524,16 +517,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="403">
-          <caret line="186" column="30" lean-forward="true" selection-start-line="186" selection-start-column="30" selection-end-line="186" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/augmentations/color.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
@@ -551,20 +534,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/script.conf">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="1" column="14" selection-start-line="1" selection-start-column="14" selection-end-line="1" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/augmentations/noise_blur.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="375">
+        <state relative-caret-position="328">
           <caret line="28" column="30" selection-start-line="28" selection-start-column="30" selection-end-line="28" selection-end-column="30" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1435">
+          <caret line="66" column="15" selection-start-line="66" selection-start-column="15" selection-end-line="66" selection-end-column="15" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/script.conf">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="19" selection-start-line="3" selection-start-column="19" selection-end-line="3" selection-end-column="19" />
         </state>
       </provider>
     </entry>
