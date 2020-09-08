@@ -150,3 +150,28 @@ def save_logs(payload: dict, save_path: str, name: str = None) -> None:
             f.write(line)
 
     return
+
+
+def split_backgrounds_between_workers(
+        path_to_backgr: str,
+        nb_of_workers: int
+) -> List[str]:
+    # Naive implementation, good for now
+    paths = [
+        os.path.join(path_to_backgr, e) for e in os.listdir(path_to_backgr)
+    ]
+    per_worker = len(paths) // nb_of_workers
+    start = 0
+    for i in range(1, nb_of_workers + 1):
+        if i == nb_of_workers:
+            yield paths[start:]
+        else:
+            yield paths[start: per_worker * i]
+            start += per_worker
+
+
+def create_train_val_dirs(dir_path: str) -> None:
+    if not os.path.exists(os.path.join(dir_path, "train")):
+        os.mkdir(os.path.join(dir_path, "train"))
+    if not os.path.exists(os.path.join(dir_path, "valid")):
+        os.mkdir(os.path.join(dir_path, "valid"))

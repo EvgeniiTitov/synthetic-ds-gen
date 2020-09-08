@@ -2,16 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b9f76dc9-02bc-448e-8e20-a98ed4cf8779" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/SpotIQ_SingleView.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/SpotIQ_SingleView.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README" beforeDir="false" afterPath="$PROJECT_DIR$/README" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/augmenter.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/augmenter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/color.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/color.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/noise_blur.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/noise_blur.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/perspective.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/perspective.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/augmentations/resize.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/resize.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/script.conf" beforeDir="false" afterPath="$PROJECT_DIR$/script.conf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -115,17 +108,17 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="740" y="274" key="FileChooserDialogImpl" timestamp="1599446942701">
+    <state x="740" y="274" key="FileChooserDialogImpl" timestamp="1599547624835">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="740" y="274" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1599446942701" />
+    <state x="740" y="274" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1599547624835" />
     <state x="0" y="164" key="SettingsEditor" timestamp="1598945869441">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="0" y="164" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1598945869441" />
-    <state width="498" height="446" key="SwitcherDM" timestamp="1599031838654">
+    <state width="498" height="446" key="SwitcherDM" timestamp="1599541754101">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="498" height="446" key="SwitcherDM/0.0.1920.1040@0.0.1920.1040" timestamp="1599031838654" />
+    <state width="498" height="446" key="SwitcherDM/0.0.1920.1040@0.0.1920.1040" timestamp="1599541754101" />
   </component>
 </project>

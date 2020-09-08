@@ -3,7 +3,6 @@ from typing import List
 import numpy as np
 import random
 import math
-import sys
 
 
 class Resize:

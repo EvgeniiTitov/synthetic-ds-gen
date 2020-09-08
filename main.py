@@ -1,9 +1,10 @@
 import os
-import sys
 import multiprocessing
 
 import argparse
-from typing import List, Tuple
+from typing import List
+import cv2
+import random
 
 from augmentations import (
     Rotation, Resize, NoiseBlur, JPEGCompressor,
@@ -11,7 +12,10 @@ from augmentations import (
 )
 from augmentations import Augmenter
 from config import config
-from utils import *
+import utils
+
+
+NEGATIVE_NAMING_FROM = 0
 
 
 def parse_arguments() -> dict:
@@ -28,6 +32,8 @@ def parse_arguments() -> dict:
                         default=0,
                         help="0: generating positives, save coordinates to txt"
                              "1: generating negatives, save empty txt files")
+    parser.add_argument("--negative_thresh", type=float, default=0.2,
+                        help="Thresh to apply a TN logo to a TN background")
     arguments = parser.parse_args()
 
     return vars(arguments)
@@ -63,7 +69,7 @@ def validate_parameters(params) -> None:
     print("Parameters validated")
 
 
-def generate_images(
+def generate_positive_images(
         class_index: int,
         class_name: str,
         logo_dir: str,
@@ -72,10 +78,14 @@ def generate_images(
         augmenter: Augmenter,
         img_count: int,
         save_path: str,
-        split: float = None,
-        are_negatives: bool = False
+        split: float = None
 ) -> None:
-    """  """
+    """
+    Generates true positives by picking a random logo from the logo_dir and
+    a random background from the background_dir. Applies augmentation towards
+    the logo, overlays it on the background image and saves it alongside the
+    coordinates (location on the background image where the logo was placed)
+    """
     if split:
         save_train_path = os.path.join(save_path, "train")
         save_valid_path = os.path.join(save_path, "valid")
@@ -83,7 +93,7 @@ def generate_images(
         train_required = nb_imgs_required - valid_required
         assert valid_required > 0 and train_required > 0
 
-    background_gen = get_background_image(background_dir)
+    background_gen = utils.get_background_image(background_dir)
     logs = dict()
     logo_paths = [os.path.join(logo_dir, e) for e in os.listdir(logo_dir)]
     total, exceptions = 0, 0
@@ -147,11 +157,7 @@ def generate_images(
         else:
             txt_store_path = save_path
 
-        # If generating negatives, create empty txt files
-        if are_negatives:
-            coord = list()
-
-        is_saved = dump_coord_txt(
+        is_saved = utils.dump_coord_txt(
             cls=class_index, payload=coord, name=img_count,
             save_path=txt_store_path
         )
@@ -178,13 +184,88 @@ def generate_images(
         else:
             logs_save_path = os.path.split(save_path)[0]
 
-        save_logs(logs, logs_save_path, class_name)
+        utils.save_logs(logs, logs_save_path, class_name)
+    print(f"Process: {os.getpid()} finishing with {exceptions} exceptions")
+
+
+def generate_negative_images(
+        logo_dir: str,
+        background_paths: List[str],
+        augmenter: Augmenter,
+        img_count: int,
+        save_path: str,
+        logo_thresh: float = 0.2
+) -> None:
+    """
+    Generate true negatives by picking a random logo from the logo_dir, a
+    random background from the background dir, combines the two repeating the
+    augmentation steps taken during true positive generation. Saves the image
+    alongside an empty txt file.
+    """
+    print(f"Process: {os.getpid()} got {len(background_paths)} backgrounds")
+
+    logo_paths = [os.path.join(logo_dir, e) for e in os.listdir(logo_dir)]
+    exceptions = 0
+    for i, backgr_path in enumerate(background_paths, start=1):
+        # Read background (true negative) image
+        backgr_image = cv2.imread(backgr_path)
+        if backgr_image is None:
+            print(f"[ERROR]: Process: {os.getpid()} failed to open "
+                  f"negative: {backgr_path}")
+            exceptions += 1
+            continue
+
+        # Apply true negative logo randomly
+        image_to_save = None
+        if random.random() > logo_thresh:
+            logo_path = random.choice(logo_paths)
+            logo_image = cv2.imread(logo_path, cv2.IMREAD_UNCHANGED)
+            if logo_image is not None:
+                # Generate synthetic image
+                try:
+                    gen_image, coord, augments = augmenter.generate_image(
+                        logo=logo_image,
+                        background=backgr_image
+                    )
+                    image_to_save = gen_image
+                except Exception:
+                    exceptions += 1
+                    image_to_save = backgr_image
+            else:
+                image_to_save = backgr_image
+        else:
+            image_to_save = backgr_image
+
+        # Save image
+        store_path = os.path.join(save_path, f"{img_count}.jpg")
+        # try:
+        #     cv2.imwrite(store_path, image_to_save)
+        # except Exception:
+        #     print(f"[ERROR]: Process: {os.getpid()} failed to write generate "
+        #           f"image on disk")
+        #     exceptions += 1
+        #     continue
+        cv2.imwrite(store_path, image_to_save)
+
+        is_saved = utils.dump_coord_txt(
+            0, [], name=img_count, save_path=save_path
+        )
+        if not is_saved:
+            print(f"[ERROR]: Process: {os.getpid()} failed to save "
+                  f"an empty txt")
+            exceptions += 1
+            continue
+
+        img_count += 1
+        if i % 100 == 0:
+            print(f"Process: {os.getpid()} generated {i} images")
+
     print(f"Process: {os.getpid()} finishing with {exceptions} exceptions")
 
 
 def main():
     args = parse_arguments()
-    cls_names = get_class_names(args["logos"])
+    cls_names = utils.get_class_names(args["logos"])
 
     # Create folders where generation results will be saved
     # Argument split determines saving format:
@@ -194,21 +275,22 @@ def main():
     if args["split"]:
         assert 0.0 < float(args["split"]) < 1.0
         split = args["split"]
-        if not os.path.exists(os.path.join(args["save_path"], "train")):
-            os.mkdir(os.path.join(args["save_path"], "train"))
-        if not os.path.exists(os.path.join(args["save_path"], "valid")):
-            os.mkdir(os.path.join(args["save_path"], "valid"))
+        utils.create_train_val_dirs(args["save_path"])
+    elif int(args["generating_negatives"]):
+        pass
     else:
-        created = create_dest_dirs(args["save_path"], cls_names)
+        created = utils.create_dest_dirs(args["save_path"], cls_names)
         if not created:
             return
+
+    require_positives = False if int(args["generating_negatives"]) else True
 
     # Validate args to ensure correct parameters have been provided
     params = config["augmentation"]
     validate_parameters(params)
 
     # Validate provided logos are actually RGBA, else attempt converting
-    exc = validate_provided_logos(args["logos"], cls_names)
+    exc = utils.validate_provided_logos(args["logos"], cls_names)
     print(f"Provided logos validated with {exc} warnings")
 
     # Initialize augmentators
@@ -266,28 +348,54 @@ def main():
     print("\nSpawning workers")
     print("Cores available:", multiprocessing.cpu_count())
     processes = list()
-    for i, cls_name in enumerate(cls_names):
-        if split:
-            save_path = args["save_path"]
-        else:
-            save_path = os.path.join(args["save_path"], cls_name)
-        process = multiprocessing.Process(
-            target=generate_images,
-            args=(
-                i, cls_name,
-                os.path.join(args["logos"], cls_name),
-                args["background"],
-                int(params["nb_images"]),
-                augmenter,
-                int(params["nb_images"]) * i,
-                save_path,
-                split,
-                True if int(args["generating_negatives"]) else False
+
+    if require_positives:
+        for i, cls_name in enumerate(cls_names):
+            if split:
+                save_path = args["save_path"]
+            else:
+                save_path = os.path.join(args["save_path"], cls_name)
+
+            process = multiprocessing.Process(
+                target=generate_positive_images,
+                args=(
+                    i,
+                    cls_name,
+                    os.path.join(args["logos"], cls_name),
+                    args["background"],
+                    int(params["nb_images"]),
+                    augmenter,
+                    int(params["nb_images"]) * i,
+                    save_path,
+                    split
+                )
             )
+            process.start()
+            processes.append(process)
+            print(f"Process {process.pid} spawned to generate: {cls_name}")
+    else:
+        background_splitter = utils.split_backgrounds_between_workers(
+            path_to_backgr=args["background"],
+            nb_of_workers=len(cls_names)
         )
-        process.start()
-        processes.append(process)
-        print(f"Process {process.pid} spawned to generate: {cls_name}")
+        thresh = float(args["negative_thresh"])
+        assert 0.0 <= thresh <= 1.0
+        for i, cls_name in enumerate(cls_names):
+            batch = next(background_splitter)
+            process = multiprocessing.Process(
+                target=generate_negative_images,
+                args=(
+                    os.path.join(args["logos"], cls_name),
+                    batch,
+                    augmenter,
+                    NEGATIVE_NAMING_FROM + (len(batch) * i),
+                    args["save_path"],
+                    thresh
+                )
+            )
+            process.start()
+            processes.append(process)
+            print(f"Process {process.pid} spawned to generate: {cls_name}")
     print(f"Total {len(processes)} processes spawned")
 
     for process in processes:
