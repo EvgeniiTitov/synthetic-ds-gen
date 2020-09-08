@@ -7,13 +7,13 @@ class Augmenter:
     def __init__(
             self,
             logo_aug_before: list,
-            image_aug: list,
             logo_aug_after: list,
             transp_thresh: float,
-            transp_range: List[float]
+            transp_range: List[float],
+            entire_image_aug: list = None
     ):
         self.logo_transforms_before = logo_aug_before
-        self.image_aug = image_aug
+        self.entire_image_aug = entire_image_aug
         self.logo_transforms_after = logo_aug_after
         self.trans_thresh = transp_thresh
         self.trans_min, self.trans_max = transp_range
@@ -32,28 +32,25 @@ class Augmenter:
 
         # Apply transformations to the logo (resizing is compulsory step, its
         # thresh = 0.0) before it gets overlayed on top of background
-        flag = True
-        exclusive = ["perspective", "cutout"]
         for logo_t in self.logo_transforms_before:
-            if random.random() > logo_t.thresh and logo_t.name not in exclusive:
+            if isinstance(logo_t, tuple):
+                logo_t = random.choice(logo_t)
+            if random.random() > logo_t.thresh:
                 logo = logo_t(logo, background_size=backgr_size)
                 log.append(logo_t.name)
-            elif random.random() > logo_t.thresh and logo_t.name in exclusive and flag:
-                logo = logo_t(logo, background_size=backgr_size)
-                log.append(logo_t.name)
-                flag = False
 
-        # Combine the logo and background
+        # Combine the logo and background - overlaying
         combined, coord_darknet, coord, transp_value = self._overlay_logo(
             logo, background
         )
         log.append(f"transp_value: {transp_value}")
 
-        # Apply transformation to the entire image (blurring, noise etc)
-        for image_t in self.image_aug:
-            if random.random() > image_t.thresh:
-                combined = image_t(combined)
-                log.append(image_t.name)
+        # Apply transformation to the entire image if any
+        if self.entire_image_aug:
+            for image_t in self.entire_image_aug:
+                if random.random() > image_t.thresh:
+                    combined = image_t(combined)
+                    log.append(image_t.name)
 
         # Apply transformation to the image section on which the logo was
         # placed such as JPEG compression.
@@ -121,7 +118,6 @@ class Augmenter:
         box_centre_y = round(((top + bot) // 2) / img_h, 6)
         width = round((right - left) / img_w, 6)
         height = round((bot - top) / img_h, 6)
-
         assert all((0.0 <= e <= 1.0 for e in [box_centre_x, box_centre_y,
                                               width, height]))
 

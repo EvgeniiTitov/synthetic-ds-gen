@@ -25,9 +25,13 @@ class NoiseBlur:
                     sigma=(0.2, 1.0)
                 ))
             elif type_ == "noise":
-                self.n.append(imgaug.augmenters.imgcorruptlike.GaussianNoise(
-                    severity=1)
-                )
+                print("Cannot apply guassian noise to 4 channel images")
+                try:
+                    self.n.append(imgaug.augmenters.imgcorruptlike.GaussianNoise(
+                        severity=1)
+                    )
+                except:
+                    continue
             else:
                 print("\n\nUnknown noise/blur type provided:", type_)
 
@@ -36,7 +40,7 @@ class NoiseBlur:
                 "Failed to initialize. No known noise/blur types provided"
             )
 
-    def __call__(self, image: np.ndarray) -> np.ndarray:
+    def __call__(self, image: np.ndarray, **kwargs) -> np.ndarray:
         aug = imgaug.augmenters.OneOf(self.n)
         return aug(image=image)
 

@@ -31,6 +31,7 @@ def create_dest_dirs(save_path: str, cls_names: List[str]) -> bool:
 
 
 def get_class_names(logos_dir: str) -> List[str]:
+    assert os.path.exists(logos_dir)
     class_names = list()
     for filename in os.listdir(logos_dir):
         filepath = os.path.join(filename, logos_dir)
@@ -128,8 +129,9 @@ def dump_coord_txt(cls: int, payload: list, name: int, save_path: str) -> bool:
     filename = os.path.join(save_path, str(name) + ".txt")
     try:
         with open(filename, "w") as f:
-            line = f"{cls} {' '.join(list(map(str, payload)))}"
-            f.write(line)
+            if payload:
+                line = f"{cls} {' '.join(list(map(str, payload)))}"
+                f.write(line)
     except Exception as e:
         print(f"Failed to create txt: {save_path}. Error: {e}")
         return False
