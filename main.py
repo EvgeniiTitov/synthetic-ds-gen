@@ -238,14 +238,13 @@ def generate_negative_images(
 
         # Save image
         store_path = os.path.join(save_path, f"{img_count}.jpg")
-        # try:
-        #     cv2.imwrite(store_path, image_to_save)
-        # except Exception:
-        #     print(f"[ERROR]: Process: {os.getpid()} failed to write generate "
-        #           f"image on disk")
-        #     exceptions += 1
-        #     continue
-        cv2.imwrite(store_path, image_to_save)
+        try:
+            cv2.imwrite(store_path, image_to_save)
+        except Exception:
+            print(f"[ERROR]: Process: {os.getpid()} failed to write generate "
+                  f"image on disk")
+            exceptions += 1
+            continue
 
         is_saved = utils.dump_coord_txt(
             0, [], name=img_count, save_path=save_path
