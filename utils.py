@@ -34,7 +34,7 @@ def get_class_names(logos_dir: str) -> List[str]:
     assert os.path.exists(logos_dir)
     class_names = list()
     for filename in os.listdir(logos_dir):
-        filepath = os.path.join(filename, logos_dir)
+        filepath = os.path.join(logos_dir, filename)
         if os.path.isdir(filepath):
             class_names.append(filename)
         else:
@@ -175,3 +175,110 @@ def create_train_val_dirs(dir_path: str) -> None:
         os.mkdir(os.path.join(dir_path, "train"))
     if not os.path.exists(os.path.join(dir_path, "valid")):
         os.mkdir(os.path.join(dir_path, "valid"))
+
+
+def check_custom_params(logo_dir: str) -> dict:
+    custom_params = dict()
+    for folder in os.listdir(logo_dir):
+        folder_path = os.path.join(logo_dir, folder)
+        for file in os.listdir(folder_path):
+            if file.endswith(".txt"):
+                custom_params[folder] = dict()
+                file_path = os.path.join(folder_path, file)
+                with open(file_path, "r") as f:
+                    for line in f:
+                        # TODO: How to properly skip blank lines in between?
+                        try:
+                            k, v = line.rstrip().split("=")
+                            k = k.strip()
+                            if len(v.split()) > 1:
+                                custom_params[folder][k] = [
+                                    float(e) for e in v.split()
+                                ]
+                            else:
+                                custom_params[folder][k] = float(v.split()[0])
+                        except:
+                            continue
+
+    return custom_params
+
+
+def get_default_params(params) -> dict:
+    default = dict()
+    default["nb_images"] = int(params["nb_images"])
+    default["deform_limit"] = float(params["deform_limit"])
+    default["deform_thresh"] = float(params["deform_thresh"])
+    default["rotation_limit"] = int(params["rotation_limit"])
+    default["rotation_thresh"] = float(params["rotation_thresh"])
+    default["resize_limit"] = [
+        float(e) for e in params["resize_limit"].split()
+    ]
+    default["noise_blur_thresh"] = float(params["noise_blur_thresh"])
+    default["transp_range"] = [
+        float(e) for e in params["transp_range"].split()
+    ]
+    default["transp_thresh"] = float(params["transp_thresh"])
+    default["perspective_thresh"] = float(params["perspective_thresh"])
+    default["perspective_range"] = [
+        float(e) for e in params["perspective_range"].split()
+    ]
+    default["cutout_size"] = float(params["cutout_size"])
+    default["cutout_nb"] = int(params["cutout_nb"])
+    default["cutout_thresh"] = float(params["cutout_thresh"])
+    default["color_thresh"] = float(params["color_thresh"])
+
+    return default
+
+
+def update_param_dict(default: dict, custom: dict) -> dict:
+    for key, value in default.items():
+        if key in custom.keys():
+            default[key] = custom[key]
+
+    return default
+
+
+def format_and_validate_parameters(
+        default_para,
+        class_names: list,
+        custom_para: dict = None,
+) -> dict:
+    default = get_default_params(default_para)
+    params = dict()
+    for class_name in class_names:
+        if class_name not in custom_para.keys():
+            params[class_name] = default
+        else:
+            params[class_name] = update_param_dict(default.copy(),
+                                                   custom_para[class_name])
+    assert len(params) == len(class_names)
+    validate_params(params)
+
+    return params
+
+
+def validate_params(params: dict) -> None:
+    for name, param in params.items():
+        assert 0 < int(param["nb_images"]) < 10_000
+        assert 0.0 <= float(param["deform_limit"]) < 1.0
+        assert 0.0 <= float(param["deform_thresh"]) <= 1.0
+        assert 0 <= int(param["rotation_limit"]) <= 180
+        assert 0.0 <= float(param["rotation_thresh"]) <= 1.0
+        assert all(
+            [0.0 < float(e) < 1.0 for e in param["resize_limit"]]
+        )
+        assert 0.0 <= float(param["noise_blur_thresh"]) <= 1.0
+        assert all(
+            [0.0 < float(e) <= 1.0 for e in param["transp_range"]]
+        )
+        assert 0.0 <= float(param["transp_thresh"]) <= 1.0
+        assert 0.0 <= float(param["perspective_thresh"]) <= 1.0
+        assert all(
+            [0.0 <= float(e) < 0.15 for e in
+             param["perspective_range"]]
+        )
+        assert 0.0 <= float(param["cutout_size"]) < 1.0
+        assert 0 <= int(param["cutout_nb"]) < 6
+        assert 0.0 <= float(param["cutout_thresh"]) <= 1
+        assert 0.0 <= float(param["color_thresh"]) <= 1.0
+    print("Parameters validated")
