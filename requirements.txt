@@ -1,0 +1,8 @@
+imagecorruptions==1.1.0
+imageio==2.9.0
+imgaug==0.4.0
+imutils==0.5.3
+numpy==1.18.5
+opencv-python==4.4.0.42
+Pillow==7.1.2
+scikit-image==0.17.2

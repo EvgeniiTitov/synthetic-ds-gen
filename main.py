@@ -15,6 +15,7 @@ import utils
 
 
 NEGATIVE_NAMING_FROM = 0
+CORES_SATURATION_COEF = 0.25
 
 
 def parse_arguments() -> dict:
@@ -37,7 +38,7 @@ def parse_arguments() -> dict:
     return vars(arguments)
 
 
-def generate_positives(args) -> None:
+def generate_positives(args: dict) -> None:
     print(f"Process: {os.getpid()} started")
     # Initialize augmentators
     deformator = Deformator(
@@ -189,7 +190,7 @@ def generate_positives(args) -> None:
     print(f"Process: {os.getpid()} finishing with {exceptions} exceptions")
 
 
-def generate_negatives(args) -> None:
+def generate_negatives(args: dict) -> None:
     print(f"Process: {os.getpid()} started")
 
     # Initialize augmentators
@@ -321,18 +322,17 @@ def main():
         created = utils.create_dest_dirs(args["save_path"], cls_names)
         if not created:
             return
+        print("==>Destinations directories created")
 
     # Validate provided logos are actually RGBA, else attempt converting
     warn = utils.validate_provided_logos(args["logos"], cls_names)
-    print(f"Provided logos validated with {warn} warnings")
+    print(f"==>Provided logos validated with {warn} warnings")
 
     # Get default augmentation parameters (applies to all classes),
     # and check for any custom ones if any (in case default not suitable for
-    # some class and it requires custom parameters)
+    # some class and it requires custom parameters). Validate afterwards
     params = config["augmentation"]
     custom_params = utils.check_custom_params(args["logos"])
-
-    # Validate parameters
     params = utils.format_and_validate_parameters(
         default_para=params,
         custom_para=custom_params,
@@ -401,7 +401,9 @@ def main():
             to_distribute.append(args_copy)
 
     cores = multiprocessing.cpu_count()
-    nb_workers = cores + 2
+    nb_workers = int(cores * CORES_SATURATION_COEF)
+    if nb_workers > len(cls_names):
+        nb_workers = len(cls_names)
     print("\nSpawning workers... Available cores:", cores)
     with multiprocessing.Pool(nb_workers) as p:
         p.map(f, tuple(to_distribute))

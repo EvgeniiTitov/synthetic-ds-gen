@@ -10,7 +10,7 @@ class JPEGCompressor:
         self.name = "jpegcomp"
         self.thresh = thresh
         self.transform = imgaug.augmenters.JpegCompression(
-            compression=(20, 60)
+            compression=(10, 50)
         )
 
     def __call__(self, image: np.ndarray) -> np.ndarray:

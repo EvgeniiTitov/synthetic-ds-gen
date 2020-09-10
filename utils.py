@@ -26,7 +26,6 @@ def create_dest_dirs(save_path: str, cls_names: List[str]) -> bool:
                 print(f"Failed to create save dir for {cls_name}. Error: {e}")
                 return False
 
-    print("Destinations directories created")
     return True
 
 
@@ -98,9 +97,11 @@ def validate_provided_logos(logos_dir: str, cls_names: List[str]) -> int:
 
         # Validate each image in the folder
         for filename in os.listdir(path_to_dir):
+            if filename.endswith(".txt"):
+                continue
             image_path = os.path.join(path_to_dir, filename)
             if not os.path.splitext(filename)[-1].lower() in ALLOWED_EXTs:
-                print(f"\nNot supported ext for image: {filename}, "
+                print(f"Not supported ext for image: {filename}, "
                       f"class: {cls_name}!")
                 warning += 1
                 continue
@@ -199,7 +200,8 @@ def check_custom_params(logo_dir: str) -> dict:
                                 custom_params[folder][k] = float(v.split()[0])
                         except:
                             continue
-
+                    print("==>Detected custom augmentation parameters for:",
+                          folder)
     return custom_params
 
 
@@ -259,26 +261,27 @@ def format_and_validate_parameters(
 
 def validate_params(params: dict) -> None:
     for name, param in params.items():
-        assert 0 < int(param["nb_images"]) < 10_000
-        assert 0.0 <= float(param["deform_limit"]) < 1.0
-        assert 0.0 <= float(param["deform_thresh"]) <= 1.0
-        assert 0 <= int(param["rotation_limit"]) <= 180
-        assert 0.0 <= float(param["rotation_thresh"]) <= 1.0
+        msg = f"Assertion error for class: {name}"
+        assert 0 < int(param["nb_images"]) < 10_000, msg
+        assert 0.0 <= float(param["deform_limit"]) < 1.0, msg
+        assert 0.0 <= float(param["deform_thresh"]) <= 1.0, msg
+        assert 0 <= int(param["rotation_limit"]) <= 180, msg
+        assert 0.0 <= float(param["rotation_thresh"]) <= 1.0, msg
         assert all(
-            [0.0 < float(e) < 1.0 for e in param["resize_limit"]]
-        )
-        assert 0.0 <= float(param["noise_blur_thresh"]) <= 1.0
+            [0.0 < float(e) < 0.2 for e in param["resize_limit"]]
+        ), msg
+        assert 0.0 <= float(param["noise_blur_thresh"]) <= 1.0, msg
         assert all(
             [0.0 < float(e) <= 1.0 for e in param["transp_range"]]
-        )
-        assert 0.0 <= float(param["transp_thresh"]) <= 1.0
-        assert 0.0 <= float(param["perspective_thresh"]) <= 1.0
+        ), msg
+        assert 0.0 <= float(param["transp_thresh"]) <= 1.0, msg
+        assert 0.0 <= float(param["perspective_thresh"]) <= 1.0, msg
         assert all(
             [0.0 <= float(e) < 0.15 for e in
              param["perspective_range"]]
-        )
-        assert 0.0 <= float(param["cutout_size"]) < 1.0
-        assert 0 <= int(param["cutout_nb"]) < 6
-        assert 0.0 <= float(param["cutout_thresh"]) <= 1
-        assert 0.0 <= float(param["color_thresh"]) <= 1.0
+        ), msg
+        assert 0.0 <= float(param["cutout_size"]) < 1.0, msg
+        assert 0 <= int(param["cutout_nb"]) < 6, msg
+        assert 0.0 <= float(param["cutout_thresh"]) <= 1, msg
+        assert 0.0 <= float(param["color_thresh"]) <= 1.0, msg
     print("Parameters validated")
