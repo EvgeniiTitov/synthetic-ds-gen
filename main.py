@@ -14,8 +14,8 @@ from config import config
 import utils
 
 
-NEGATIVE_NAMING_FROM = 0
-CORES_SATURATION_COEF = 0.25
+NEGATIVE_NAMING_FROM = 655_000
+CORES_SATURATION_COEF = 1.25
 
 
 def parse_arguments() -> dict:
@@ -32,7 +32,7 @@ def parse_arguments() -> dict:
                         default=0,
                         help="0: generating positives, save coordinates to txt"
                              "1: generating negatives, save empty txt files")
-    parser.add_argument("--negative_thresh", type=float, default=0.2,
+    parser.add_argument("--negative_thresh", type=float, default=0.6,
                         help="Thresh to apply a TN logo to a TN background")
     arguments = parser.parse_args()
     return vars(arguments)
@@ -47,7 +47,8 @@ def generate_positives(args: dict) -> None:
     )
     rotator = Rotation(
         rotation_limit=int(args["params"]["rotation_limit"]),
-        rotation_thresh=float(args["params"]["rotation_thresh"])
+        rotation_thresh=float(args["params"]["rotation_thresh"]),
+        rotation_type="bound"
     )
     resizer = Resize(
         resize_range=[float(e) for e in args["params"]["resize_limit"]]
