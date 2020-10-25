@@ -68,7 +68,8 @@ def generate_positives(args: dict) -> None:
         thresh=float(args["params"]["color_thresh"])
     )
     noise_blurer = NoiseBlur(
-        types=["multiply", "contrast", "blur"],
+        #types=["multiply", "contrast", "blur"],
+        types=["contrast", "blur"],
         thresh=float(args["params"]["noise_blur_thresh"])
     )
     # NOTE: a) order matters; b) if tuple provided, only one augmentation in
@@ -76,7 +77,8 @@ def generate_positives(args: dict) -> None:
     logo_aug_before = [
         deformator,
         (color, noise_blurer),
-        (perspective_wrapper, cutter),
+        #(perspective_wrapper, cutter),
+        perspective_wrapper,
         rotator,
         resizer
     ]
