@@ -9,6 +9,9 @@ import random
 ALLOWED_EXTs = [".jpg", ".jpeg", ".png"]
 
 
+def save_generation_logs(): pass
+
+
 def create_dest_dirs(save_path: str, cls_names: List[str]) -> bool:
     if not os.path.exists(save_path):
         try:
@@ -16,7 +19,6 @@ def create_dest_dirs(save_path: str, cls_names: List[str]) -> bool:
         except Exception as e:
             print(f"Failed to create the dir to save results in. Error: {e}")
             return False
-
     for cls_name in cls_names:
         dirname = os.path.join(save_path, cls_name)
         if not os.path.exists(dirname):
@@ -25,7 +27,6 @@ def create_dest_dirs(save_path: str, cls_names: List[str]) -> bool:
             except Exception as e:
                 print(f"Failed to create save dir for {cls_name}. Error: {e}")
                 return False
-
     return True
 
 
@@ -200,8 +201,8 @@ def check_custom_params(logo_dir: str) -> dict:
                                 custom_params[folder][k] = float(v.split()[0])
                         except:
                             continue
-                    print("==>Detected custom augmentation parameters for:",
-                          folder)
+                    print("[INFO]: Detected custom augmentation "
+                          "parameters for:", folder)
     return custom_params
 
 

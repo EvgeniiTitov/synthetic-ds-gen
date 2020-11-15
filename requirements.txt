@@ -6,3 +6,4 @@ numpy==1.18.5
 opencv-python==4.4.0.42
 Pillow==7.1.2
 scikit-image==0.17.2
+flake8

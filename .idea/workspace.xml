@@ -20,10 +20,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b9f76dc9-02bc-448e-8e20-a98ed4cf8779" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/augmentations/color.py" beforeDir="false" afterPath="$PROJECT_DIR$/augmentations/color.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/script.conf" beforeDir="false" afterPath="$PROJECT_DIR$/script.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -137,11 +139,11 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="722" y="321" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040/-1080.-724.1080.2520@0.0.1920.1040" timestamp="1599639085685" />
-    <state x="740" y="274" key="FileChooserDialogImpl" timestamp="1602452342592">
+    <state x="740" y="274" key="FileChooserDialogImpl" timestamp="1603621913466">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="740" y="274" key="FileChooserDialogImpl/0.0.1920.1040/-1080.-724.1080.2520@0.0.1920.1040" timestamp="1600923464547" />
-    <state x="740" y="274" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1602452342592" />
+    <state x="740" y="274" key="FileChooserDialogImpl/0.0.1920.1040@0.0.1920.1040" timestamp="1603621913466" />
     <state x="434" y="165" key="SettingsEditor" timestamp="1599638946886">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
