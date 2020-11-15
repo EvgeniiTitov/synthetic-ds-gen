@@ -256,7 +256,8 @@ def main():
     with multiprocessing.Pool(nb_workers) as p:
         p.map(generate_positives, tuple(to_distribute))
 
-    print("[INFO]: Completed")
+    print("[INFO]: Generation completed")
+    utils.save_generation_parameters(params)
 
 
 if __name__ == "__main__":

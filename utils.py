@@ -1,4 +1,6 @@
 import os
+import json
+import datetime
 
 import cv2
 from typing import List
@@ -9,7 +11,25 @@ import random
 ALLOWED_EXTs = [".jpg", ".jpeg", ".png"]
 
 
-def save_generation_logs(): pass
+def save_generation_parameters(params: dict, savedir: str = None) -> None:
+    if savedir is not None:
+        if not os.path.exists(savedir):
+            os.mkdir(savedir)
+        save_path = savedir
+    else:
+        save_path = os.path.join(os.path.dirname(__file__), "logs")
+        if not os.path.exists(save_path):
+            os.mkdir(save_path)
+    filename = str(datetime.datetime.now())[:-7]\
+                   .replace(" ", "_")\
+                   .replace(":", "-") + ".json"
+    try:
+        with open(os.path.join(save_path, filename), "w") as json_file:
+            json.dump(params, json_file)
+    except Exception as e:
+        print(f"Failed to save generation parameters to json. Error: {e}")
+        raise e
+    print("[INFO]: Generation parameters saved to:", save_path)
 
 
 def create_dest_dirs(save_path: str, cls_names: List[str]) -> bool:
